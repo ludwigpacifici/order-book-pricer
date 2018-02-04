@@ -1,0 +1,4 @@
+*.o
+*~
+/data/
+/src/order-book-tracker
