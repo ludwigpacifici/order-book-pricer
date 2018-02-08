@@ -1,17 +1,18 @@
-#include "AddOrder.hpp"
+#include "Order.hpp"
 #include "PricerOutput.hpp"
-#include "ReduceOrder.hpp"
 
 #include <iostream>
 
 int
 main()
 {
-  obp::AddOrder ao = { 1, "a", obp::Side::Ask, { 3 }, { 4 } };
-  std::cout << ao << '\n';
+  obp::Order o1(obp::OrderType::AddOrder,
+                obp::AddOrder{ 1, "a", obp::Side::Ask, { 3 }, { 4 } });
+  std::cout << o1 << '\n';
 
-  obp::ReduceOrder ro = { 1, "a", { 2 } };
-  std::cout << ro << '\n';
+  obp::Order o2(obp::OrderType::ReduceOrder, obp::ReduceOrder{ 1, "a", { 2 } });
+
+  std::cout << o2 << '\n';
 
   obp::PricerOutput po = { 1,
                            obp::Side::Bid,
