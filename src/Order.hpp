@@ -12,6 +12,25 @@ enum class OrderType
   ReduceOrder
 };
 
+std::optional<OrderType>
+order_type_from(const char type)
+{
+  switch (type) {
+    case 'A':
+    case 'a':
+      return OrderType::AddOrder;
+
+    case 'R':
+    case 'r':
+      return OrderType::ReduceOrder;
+
+    default:
+      std::cerr << "Invalid order type: " << type
+                << ", ASCII code: " << static_cast<int>(type) << '\n';
+      return std::nullopt;
+  }
+}
+
 std::string
 to_string(const OrderType data)
 {
@@ -69,10 +88,12 @@ operator<<(std::ostream& stream, const Order& data)
 {
   switch (data.type) {
     case OrderType::AddOrder:
-      return stream << to_string(data.type) << ": " << data.data.add;
+      return stream << "{\"" << to_string(data.type) << "\""
+                    << ": " << data.data.add << "}";
 
     case OrderType::ReduceOrder:
-      return stream << to_string(data.type) << ": " << data.data.reduce;
+      return stream << "{\"" << to_string(data.type) << "\""
+                    << ": " << data.data.reduce << "}";
 
     default:
       return stream << to_string(data.type);

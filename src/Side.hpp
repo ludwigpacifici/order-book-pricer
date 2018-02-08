@@ -1,7 +1,7 @@
 #pragma once
 
+#include <iostream>
 #include <optional>
-#include <ostream>
 
 namespace obp {
 enum class Side
@@ -11,14 +11,18 @@ enum class Side
 };
 
 std::optional<Side>
-side_from(char c)
+side_from(char side)
 {
-  switch (c) {
+  switch (side) {
     case 'B':
+    case 'b':
       return Side::Bid;
     case 'S':
+    case 's':
       return Side::Ask;
     default:
+      std::cerr << "Invalid side: " << side
+                << ", ASCII code: " << static_cast<int>(side) << '\n';
       return std::nullopt;
   }
 }
