@@ -44,7 +44,8 @@ read_one(std::istream& stream)
 
       return std::make_optional<obp::Order>(
         OrderType::AddOrder,
-        AddOrder{ timestamp, order_id, *side, Price(price, 100), { size } });
+        AddOrder{
+          timestamp, order_id, *side, Price(price, 100), Quantity{ size } });
     }
 
     case OrderType::ReduceOrder: {
@@ -55,7 +56,8 @@ read_one(std::istream& stream)
       stream >> size;
 
       return std::make_optional<obp::Order>(
-        OrderType::ReduceOrder, ReduceOrder{ timestamp, order_id, { size } });
+        OrderType::ReduceOrder,
+        ReduceOrder{ timestamp, order_id, Quantity{ size } });
     }
 
     default:

@@ -8,9 +8,25 @@ struct Quantity
 {
   std::uint64_t value;
 
+  Quantity()
+    : value{ 0 }
+  {
+  }
+
+  explicit Quantity(const std::uint64_t a_value)
+    : value{ a_value }
+  {
+  }
+
   Quantity& operator-=(const Quantity& rhs)
   {
     value -= rhs.value;
+    return *this;
+  }
+
+  Quantity& operator+=(const Quantity& rhs)
+  {
+    value += rhs.value;
     return *this;
   }
 };

@@ -9,7 +9,7 @@ namespace obp {
 
 class OrderFollower
 {
-private:
+public:
   struct AddOrderAnonymous
   {
     std::time_t timestamp;
@@ -18,7 +18,6 @@ private:
     Quantity size;
   };
 
-public:
   bool add(const AddOrder& order)
   {
     const auto pair = m_orders.emplace(
@@ -29,17 +28,20 @@ public:
     return std::get<1>(pair);
   }
 
-  std::optional<Quantity> reduce(const ReduceOrder& order)
+  std::optional<AddOrderAnonymous> reduce(const ReduceOrder& order)
   {
     if (auto it = m_orders.find(order.order_id); it == std::cend(m_orders)) {
       std::cerr << "Reduce order not found: " << order << '\n';
       return std::nullopt;
     } else if (it->second.size > order.size) {
       it->second.size -= order.size;
-      return it->second.size;
+      return it->second;
     } else {
+      const auto ret = AddOrderAnonymous{
+        it->second.timestamp, it->second.side, it->second.price, Quantity{ 0 }
+      };
       m_orders.erase(it);
-      return std::nullopt;
+      return ret;
     }
   }
 

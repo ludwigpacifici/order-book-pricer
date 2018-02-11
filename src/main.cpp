@@ -1,3 +1,4 @@
+#include "AnonymousBook.hpp"
 #include "InputReader.hpp"
 #include "OrderFollower.hpp"
 
@@ -59,6 +60,8 @@ main(int argc, char* argv[])
   std::cout << "target_size: " << target_size << '\n';
 
   obp::OrderFollower follower;
+  obp::AnonymousBookBuy bookBuy;
+  obp::AnonymousBookSell bookSell;
 
   while (!std::cin.eof()) {
     const auto order = obp::read_one(std::cin);
@@ -68,17 +71,43 @@ main(int argc, char* argv[])
       switch (order->type) {
         case obp::OrderType::AddOrder:
           std::cout << "added?: " << follower.add(order->data.add) << '\n';
+
+          if (order->data.add.side == obp::Side::Bid) {
+            std::cout << "Aggregated size for curent buy price: "
+                      << bookBuy.add(order->data.add.price,
+                                     order->data.add.size)
+                      << '\n';
+          } else {
+            std::cout << "Aggregated size for curent sell price: "
+                      << bookSell.add(order->data.add.price,
+                                      order->data.add.size)
+                      << '\n';
+          }
           break;
+
         case obp::OrderType::ReduceOrder:
-          const auto remaining_size = follower.reduce(order->data.reduce);
-          if (remaining_size) {
-            std::cout << "reduce to: " << *remaining_size << '\n';
+          const auto anonymous_order = follower.reduce(order->data.reduce);
+          if (anonymous_order) {
+            std::cout << "reduce to: " << anonymous_order->size << '\n';
+
+            if (anonymous_order->side == obp::Side::Bid) {
+              std::cout << "Aggregated size for curent buy price: "
+                        << bookBuy.reduce(anonymous_order->price,
+                                          order->data.reduce.size)
+                        << '\n';
+            } else {
+              std::cout << "Aggregated size for curent sell price: "
+                        << bookSell.reduce(anonymous_order->price,
+                                           order->data.reduce.size)
+                        << '\n';
+            }
           } else {
             std::cout << "Not there.\n";
           }
           break;
       }
-
+      std::cout << "-----------------------------------------------------------"
+                   "---------------------\n";
     } else {
       std::cerr << "Cannot read one order\n";
     }
