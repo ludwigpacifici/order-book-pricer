@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Configuration.hpp"
 #include "Quantity.hpp"
 
