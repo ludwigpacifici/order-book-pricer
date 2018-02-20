@@ -1,44 +1,24 @@
-#pragma once
+#ifndef ADD_REDUCEORDER_HPP
+#define ADD_REDUCEORDER_HPP
 
-#include "Configuration.hpp"
 #include "Quantity.hpp"
 
 #include <ctime>
 #include <string>
 
 namespace obp {
-struct ReduceOrder
-{
+struct ReduceOrder {
   std::time_t timestamp;
   std::string order_id;
   Quantity size;
 };
 
-std::ostream&
-json(std::ostream& stream, const ReduceOrder& data)
-{
+inline std::ostream &operator<<(std::ostream &stream, const ReduceOrder &data) {
   return stream << "{"
-                << "\"timestamp\": " << data.timestamp << ", "
-                << "\"order_id\": \"" << data.order_id << "\", "
-                << "\"size\": " << data.size << "}";
+                << R"("timestamp": )" << data.timestamp << ", "
+                << R"("order_id": ")" << data.order_id << R"(", )"
+                << R"("size": )" << data.size << "}";
 }
+} // namespace obp
 
-std::ostream&
-compact(std::ostream& stream, const ReduceOrder& data)
-{
-  return stream << data.timestamp << " " << data.order_id << " " << data.size;
-}
-
-std::ostream&
-operator<<(std::ostream& stream, const ReduceOrder& data)
-{
-  switch (config::g_output_format) {
-    case config::OutputFormat::Compact:
-      return compact(stream, data);
-    case config::OutputFormat::Json:
-      return json(stream, data);
-    default:
-      return compact(stream, data);
-  }
-}
-}
+#endif

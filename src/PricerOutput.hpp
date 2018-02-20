@@ -1,4 +1,6 @@
-#include "Configuration.hpp"
+#ifndef SRC_PRICEROUTPUT_H
+#define SRC_PRICEROUTPUT_H
+
 #include "Price.hpp"
 #include "Side.hpp"
 
@@ -6,20 +8,18 @@
 #include <string>
 
 namespace obp {
-struct PricerOutput
-{
+struct PricerOutput {
   std::time_t timestamp;
   Side action;
   std::optional<Price> total;
 };
 
-std::ostream&
-json(std::ostream& stream, const PricerOutput& data)
-{
+inline std::ostream &operator<<(std::ostream &stream,
+                                const PricerOutput &data) {
   stream << "{"
-         << "\"timestamp\": " << data.timestamp << ", "
-         << "\"action\": " << data.action << ", "
-         << "\"total\": ";
+         << R"("timestamp": )" << data.timestamp << ", "
+         << R"("action": )" << data.action << ", "
+         << R"("total": )";
 
   if (data.total) {
     stream << *data.total;
@@ -28,29 +28,6 @@ json(std::ostream& stream, const PricerOutput& data)
   }
   return stream << "}";
 }
+} // namespace obp
 
-std::ostream&
-compact(std::ostream& stream, const PricerOutput& data)
-{
-  stream << data.timestamp << " " << data.action << " ";
-
-  if (data.total) {
-    return stream << *data.total;
-  } else {
-    return stream << "NA";
-  }
-}
-
-std::ostream&
-operator<<(std::ostream& stream, const PricerOutput& data)
-{
-  switch (config::g_output_format) {
-    case config::OutputFormat::Compact:
-      return compact(stream, data);
-    case config::OutputFormat::Json:
-      return json(stream, data);
-    default:
-      return compact(stream, data);
-  }
-}
-}
+#endif

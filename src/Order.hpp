@@ -1,102 +1,64 @@
-#pragma once
+#ifndef SRC_ORDER_HPP
+#define SRC_ORDER_HPP
 
 #include "AddOrder.hpp"
+#include "Overloaded.hpp"
 #include "ReduceOrder.hpp"
 
 #include <iostream>
+#include <variant>
 
 namespace obp {
-enum class OrderType
-{
-  AddOrder,
-  ReduceOrder
-};
+enum class OrderType { AddOrder, ReduceOrder };
 
-std::optional<OrderType>
-order_type_from(const char type)
-{
+inline std::optional<OrderType> order_type_from(const char type) {
   switch (type) {
-    case 'A':
-    case 'a':
-      return OrderType::AddOrder;
+  case 'A':
+  case 'a':
+    return OrderType::AddOrder;
 
-    case 'R':
-    case 'r':
-      return OrderType::ReduceOrder;
+  case 'R':
+  case 'r':
+    return OrderType::ReduceOrder;
 
-    default:
-      std::cerr << "Invalid order type: " << type
-                << ", ASCII code: " << static_cast<int>(type) << '\n';
-      return std::nullopt;
+  default:
+    std::cerr << "Invalid order type: " << type
+              << ", ASCII code: " << static_cast<int>(type) << '\n';
+    return std::nullopt;
   }
 }
 
-std::string
-to_string(const OrderType data)
-{
+inline std::string to_string(const OrderType data) {
   switch (data) {
-    case OrderType::AddOrder:
-      return "AddOrder";
+  case OrderType::AddOrder:
+    return "AddOrder";
 
-    case OrderType::ReduceOrder:
-      return "ReduceOrder";
+  case OrderType::ReduceOrder:
+    return "ReduceOrder";
 
-    default:
-      return "Unknown OrderType";
+  default:
+    return "Unknown OrderType";
   }
 }
 
-struct Order
-{
-  union Orders
-  {
-    AddOrder add;
-    ReduceOrder reduce;
+using Order = std::variant<AddOrder, ReduceOrder>;
 
-    ~Orders() {}
-    Orders(const AddOrder& data)
-      : add(data)
-    {
-    }
-    Orders(AddOrder&& data)
-      : add(std::move(data))
-    {
-    }
-    Orders(const ReduceOrder& data)
-      : reduce(data)
-    {
-    }
-    Orders(ReduceOrder&& data)
-      : reduce(std::move(data))
-    {
-    }
-  };
+inline std::ostream &operator<<(std::ostream &stream, const Order &data) {
+  std::visit(
+      help::overloaded{
+          [&stream](const AddOrder &data) {
+            stream << R"({")" << to_string(OrderType::AddOrder) << R"(": )"
+                   << data << "}";
+          },
+          [&stream](const ReduceOrder &data) {
+            stream << R"({")" << to_string(OrderType::ReduceOrder) << R"(": )"
+                   << data << "}";
+          },
+      },
+      data);
 
-  OrderType type;
-  Orders data;
-
-  template<typename T>
-  Order(const OrderType t, T&& o)
-    : type(t)
-    , data(std::forward<T>(o))
-  {
-  }
-};
-
-std::ostream&
-operator<<(std::ostream& stream, const Order& data)
-{
-  switch (data.type) {
-    case OrderType::AddOrder:
-      return stream << "{\"" << to_string(data.type) << "\""
-                    << ": " << data.data.add << "}";
-
-    case OrderType::ReduceOrder:
-      return stream << "{\"" << to_string(data.type) << "\""
-                    << ": " << data.data.reduce << "}";
-
-    default:
-      return stream << to_string(data.type);
-  }
+  return stream;
 }
-}
+} // namespace obp
+
+#endif

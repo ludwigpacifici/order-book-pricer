@@ -1,51 +1,39 @@
-#pragma once
+#ifndef SRC_QUANTITY_HPP
+#define SRC_QUANTITY_HPP
 
 #include <cstdint>
 #include <ostream>
 
 namespace obp {
-struct Quantity
-{
+struct Quantity {
   std::uint64_t value;
 
-  Quantity()
-    : value{ 0 }
-  {
-  }
+  Quantity() : value{0} {}
 
-  explicit Quantity(const std::uint64_t a_value)
-    : value{ a_value }
-  {
-  }
+  explicit Quantity(const std::uint64_t a_value) : value{a_value} {}
 
-  Quantity& operator-=(const Quantity& rhs)
-  {
+  Quantity &operator-=(const Quantity &rhs) {
     value -= rhs.value;
     return *this;
   }
 
-  Quantity& operator+=(const Quantity& rhs)
-  {
+  Quantity &operator+=(const Quantity &rhs) {
     value += rhs.value;
     return *this;
   }
 };
 
-std::ostream&
-operator<<(std::ostream& stream, const Quantity& data)
-{
+inline std::ostream &operator<<(std::ostream &stream, const Quantity &data) {
   return stream << data.value;
 }
 
-bool
-operator<(const Quantity& lhs, const Quantity& rhs)
-{
+inline bool operator<(const Quantity &lhs, const Quantity &rhs) {
   return lhs.value < rhs.value;
 }
 
-bool
-operator>(const Quantity& lhs, const Quantity& rhs)
-{
+inline bool operator>(const Quantity &lhs, const Quantity &rhs) {
   return lhs.value > rhs.value;
 }
-}
+} // namespace obp
+
+#endif
