@@ -11,6 +11,13 @@ struct Price {
       : value(static_cast<std::uint64_t>(v * decimal_count)) {}
 
   explicit Price(const std::uint64_t a_value) : value{a_value} {}
+
+  Price() : value{0} {}
+
+  Price &operator+=(const Price &other) {
+    value += other.value;
+    return *this;
+  }
 };
 
 inline bool operator<(const Price &lhs, const Price &rhs) {

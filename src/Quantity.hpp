@@ -12,13 +12,18 @@ struct Quantity {
 
   explicit Quantity(const std::uint64_t a_value) : value{a_value} {}
 
-  Quantity &operator-=(const Quantity &rhs) {
-    value -= rhs.value;
+  Quantity &operator-=(const Quantity &other) {
+    value -= other.value;
     return *this;
   }
 
-  Quantity &operator+=(const Quantity &rhs) {
-    value += rhs.value;
+  Quantity &operator+=(const Quantity &other) {
+    value += other.value;
+    return *this;
+  }
+
+  Quantity &operator=(const Quantity &other) {
+    value = other.value;
     return *this;
   }
 };
@@ -33,6 +38,10 @@ inline bool operator<(const Quantity &lhs, const Quantity &rhs) {
 
 inline bool operator>(const Quantity &lhs, const Quantity &rhs) {
   return lhs.value > rhs.value;
+}
+
+inline bool operator==(const Quantity &lhs, const Quantity &rhs) {
+  return lhs.value == rhs.value;
 }
 } // namespace obp
 

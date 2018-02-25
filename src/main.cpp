@@ -1,6 +1,7 @@
 #include "AnonymousBook.hpp"
 #include "InputReader.hpp"
 #include "OrderFollower.hpp"
+#include "Pricer.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -22,12 +23,12 @@ static std::string usage(const char *executable_name) {
   return text.str();
 }
 
-static std::size_t parse_target_size(const char *executable_name,
-                                     const char *target_size) {
+static obp::Quantity parse_target_size(const char *executable_name,
+                                       const char *target_size) {
   try {
     const auto value = std::stoll(target_size);
     if (value > 0) {
-      return value;
+      return obp::Quantity(value);
     }
 
     std::cerr << "target_size must be strictly positive. Argument provided: "
@@ -59,6 +60,7 @@ int main(int argc, char *argv[]) {
   obp::OrderFollower follower;
   obp::AnonymousBookBuy bookBuy;
   obp::AnonymousBookSell bookSell;
+  obp::Pricer pricer;
 
   while (!std::cin.eof()) {
     const auto order = obp::read_one(std::cin);
@@ -67,21 +69,35 @@ int main(int argc, char *argv[]) {
 
       std::visit(
           help::overloaded{
-              [&follower, &bookBuy, &bookSell](const obp::AddOrder &add_order) {
+              [&follower, &bookBuy, &bookSell, &pricer,
+               target_size](const obp::AddOrder &add_order) {
                 std::cout << "added?: " << follower.add(add_order) << '\n';
                 if (add_order.side == obp::Side::Bid) {
                   std::cout << "Aggregated size for curent buy price: "
                             << bookBuy.add(add_order.price, add_order.size)
                             << '\n';
+
+                  if (const auto output =
+                          pricer.price(add_order.timestamp, obp::Side::Ask,
+                                       bookBuy, target_size);
+                      output) {
+                    std::cout << "output: " << *output << '\n';
+                  }
                 } else {
                   std::cout << "Aggregated size for curent sell price: "
                             << bookSell.add(add_order.price, add_order.size)
                             << '\n';
+                  if (const auto output =
+                          pricer.price(add_order.timestamp, obp::Side::Bid,
+                                       bookSell, target_size);
+                      output) {
+                    std::cout << "output: " << *output << '\n';
+                  }
                 }
               },
 
-              [&follower, &bookBuy,
-               &bookSell](const obp::ReduceOrder &reduce_order) {
+              [&follower, &bookBuy, &bookSell, &pricer,
+               target_size](const obp::ReduceOrder &reduce_order) {
                 const auto anonymous_order = follower.reduce(reduce_order);
                 if (anonymous_order) {
                   std::cout << "reduce to: " << anonymous_order->size << '\n';
@@ -91,11 +107,23 @@ int main(int argc, char *argv[]) {
                               << bookBuy.reduce(anonymous_order->price,
                                                 reduce_order.size)
                               << '\n';
+                    if (const auto output =
+                            pricer.price(reduce_order.timestamp, obp::Side::Ask,
+                                         bookBuy, target_size);
+                        output) {
+                      std::cout << "output: " << *output << '\n';
+                    }
                   } else {
                     std::cout << "Aggregated size for curent sell price: "
                               << bookSell.reduce(anonymous_order->price,
                                                  reduce_order.size)
                               << '\n';
+                    if (const auto output =
+                            pricer.price(reduce_order.timestamp, obp::Side::Bid,
+                                         bookSell, target_size);
+                        output) {
+                      std::cout << "output: " << *output << '\n';
+                    }
                   }
                 } else {
                   std::cout << "Not there.\n";
