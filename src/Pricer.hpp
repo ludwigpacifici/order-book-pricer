@@ -6,7 +6,7 @@
 namespace obp {
 class Pricer {
 public:
-  Pricer() : m_startEmitOutput{false} {}
+  Pricer() : m_isNotApplicable{true} {}
 
   template <typename Book>
   std::optional<PricerOutput> price(const std::time_t timestamp,
@@ -15,23 +15,23 @@ public:
     Price price;
     for (const auto &pair : book.priceLevels()) {
       if (target_size < std::get<Quantity>(pair)) {
-        price += Price((std::get<const Price>(pair).value / 100.0) *
-                       target_size.value);
-        target_size = Quantity{};
+        price += Price(std::get<const Price>(pair).value * target_size.value);
+        target_size = Quantity(0);
         break;
       } else {
-        price += Price((std::get<const Price>(pair).value / 100.0) *
+        price += Price(std::get<const Price>(pair).value *
                        std::get<Quantity>(pair).value);
         target_size -= std::get<Quantity>(pair);
       }
     }
 
-    if (target_size == Quantity{}) {
-      m_startEmitOutput = true;
+    if (target_size == Quantity(0)) {
+      m_isNotApplicable = false;
       return std::make_optional(PricerOutput{timestamp, opposite_side, price});
     }
 
-    if (m_startEmitOutput) {
+    if (m_isNotApplicable == false) {
+      m_isNotApplicable = true;
       return std::make_optional(
           PricerOutput{timestamp, opposite_side, std::nullopt});
     }
@@ -40,7 +40,7 @@ public:
   }
 
 private:
-  bool m_startEmitOutput;
+  bool m_isNotApplicable;
 };
 } // namespace obp
 

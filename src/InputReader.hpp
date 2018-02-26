@@ -35,14 +35,14 @@ inline std::optional<Order> read_one(std::istream &stream) {
       return std::nullopt;
     }
 
-    double price;
+    float price;
     stream >> price;
 
     std::uint64_t size;
     stream >> size;
 
-    return std::make_optional<obp::Order>(AddOrder{
-        timestamp, order_id, *side, Price(price, 100), Quantity{size}});
+    return std::make_optional<obp::Order>(
+        AddOrder{timestamp, order_id, *side, Price(price), Quantity{size}});
   }
 
   case OrderType::ReduceOrder: {

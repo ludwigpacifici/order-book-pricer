@@ -1,18 +1,16 @@
 #pragma once
 
 #include <cstdint>
+#include <iomanip>
 #include <ostream>
 
 namespace obp {
 struct Price {
-  std::uint64_t value;
+  float value;
 
-  Price(const double v, const unsigned int decimal_count)
-      : value(static_cast<std::uint64_t>(v * decimal_count)) {}
+  explicit Price(const float a_value) : value{a_value} {}
 
-  explicit Price(const std::uint64_t a_value) : value{a_value} {}
-
-  Price() : value{0} {}
+  Price() : value{0.0f} {}
 
   Price &operator+=(const Price &other) {
     value += other.value;
@@ -29,6 +27,7 @@ inline bool operator>(const Price &lhs, const Price &rhs) {
 }
 
 inline std::ostream &operator<<(std::ostream &stream, const Price &data) {
-  return stream << data.value;
+
+  return stream << std::fixed << std::setprecision(2) << data.value;
 }
 } // namespace obp
