@@ -43,6 +43,18 @@ inline bool operator>(const Quantity &lhs, const Quantity &rhs) {
 inline bool operator==(const Quantity &lhs, const Quantity &rhs) {
   return lhs.value == rhs.value;
 }
+
+inline bool operator!=(const Quantity &lhs, const Quantity &rhs) {
+  return lhs.value != rhs.value;
+}
+
+inline bool operator>=(const Quantity &lhs, const Quantity &rhs) {
+  return lhs > rhs or lhs == rhs;
+}
+
+inline bool operator<=(const Quantity &lhs, const Quantity &rhs) {
+  return lhs < rhs or lhs == rhs;
+}
 } // namespace obp
 
 #endif

@@ -30,4 +30,12 @@ inline std::ostream &operator<<(std::ostream &stream, const Price &data) {
 
   return stream << std::fixed << std::setprecision(2) << data.value;
 }
+
+inline bool operator==(const Price &lhs, const Price &rhs) {
+  return lhs.value == rhs.value;
+}
+
+inline bool operator!=(const Price &lhs, const Price &rhs) {
+  return lhs.value != rhs.value;
+}
 } // namespace obp
