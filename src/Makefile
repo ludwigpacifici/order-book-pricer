@@ -1,11 +1,11 @@
 CXX=g++
-CXXFLAGS=-std=c++17 -Wall -Wextra -Werror -pedantic -O2
+CXXFLAGS=-std=c++17 -Wall -Wextra -Werror -Wpedantic -O2
 SRC_FILES=$(wildcard *.cpp)
 HDR_FILES=$(wildcard *.hpp)
-BIN=order-book-tracker
+BIN=order-book-pricer
 
 all:
-	$(CXX) $(CXXFLAGS) main.cpp -o order-book-tracker
+	$(CXX) $(CXXFLAGS) main.cpp -o $(BIN)
 
 clang_format:
 	$(foreach file,$(HDR_FILES) $(SRC_FILES),clang-format -i $(file);)
@@ -18,3 +18,6 @@ cppcheck:
 
 clean:
 	rm -f $(BIN)
+
+test:
+	make --directory=.. test

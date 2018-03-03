@@ -1,6 +1,8 @@
 #ifndef SRC_SIDE_HPP
 #define SRC_SIDE_HPP
 
+#include "Configuration.hpp"
+
 #include <iostream>
 #include <optional>
 
@@ -23,13 +25,24 @@ inline std::optional<Side> side_from(char side) {
 }
 
 inline std::ostream &operator<<(std::ostream &stream, const Side &data) {
-  switch (data) {
-  case Side::Bid:
-    return stream << "Bid";
-  case Side::Ask:
-    return stream << "Ask";
-  default:
-    return stream << "Unknown Side";
+  if constexpr (g_format == OutputFormat::Compact) {
+    switch (data) {
+    case Side::Bid:
+      return stream << "B";
+    case Side::Ask:
+      return stream << "S";
+    default:
+      return stream << "U";
+    }
+  } else {
+    switch (data) {
+    case Side::Bid:
+      return stream << "Bid";
+    case Side::Ask:
+      return stream << "Ask";
+    default:
+      return stream << "Unknown Side";
+    }
   }
 }
 } // namespace obp

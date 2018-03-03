@@ -1,7 +1,7 @@
 *.o
 *~
 /data/
-/src/order-book-tracker
+/src/order-book-pricer
 GPATH
 GRTAGS
 GTAGS

@@ -55,85 +55,86 @@ int main(int argc, char *argv[]) {
   }
 
   const auto target_size = parse_target_size(argv[0], argv[1]);
-  std::cout << "target_size: " << target_size << '\n';
 
   obp::OrderFollower follower;
   obp::AnonymousBookBuy bookBuy;
   obp::AnonymousBookSell bookSell;
-  obp::Pricer pricer;
+  obp::Pricer pricerBuy;
+  obp::Pricer pricerSell;
+
+  auto processOrderAdd = [&follower, &bookBuy, &bookSell, &pricerBuy,
+                          &pricerSell,
+                          target_size](const obp::AddOrder &add_order) {
+    follower.add(add_order);
+
+    switch (add_order.side) {
+    case obp::Side::Bid:
+      bookBuy.add(add_order.price, add_order.size);
+      // std::cout << "BookBuy: " << bookBuy << '\n';
+
+      if (const auto output = pricerBuy.price(
+              add_order.timestamp, obp::Side::Ask, bookBuy, target_size);
+          output) {
+        std::cout << *output << '\n';
+      }
+      break;
+
+    case obp::Side::Ask:
+      bookSell.add(add_order.price, add_order.size);
+      // std::cout << "bookSell: " << bookSell << '\n';
+
+      if (const auto output = pricerSell.price(
+              add_order.timestamp, obp::Side::Bid, bookSell, target_size);
+          output) {
+        std::cout << *output << '\n';
+      }
+      break;
+
+    default:
+      std::cerr << "Unknown order add side: " << add_order.side << '\n';
+      break;
+    }
+  };
+
+  auto processOrderReduce = [&follower, &bookBuy, &bookSell, &pricerBuy,
+                             &pricerSell, target_size](
+                                const obp::ReduceOrder &reduce_order) {
+    const auto anonymous_order = follower.reduce(reduce_order);
+
+    switch (anonymous_order->side) {
+    case obp::Side::Bid:
+      bookBuy.reduce(anonymous_order->price, reduce_order.size);
+      // std::cout << "BookBuy: " << bookBuy << '\n';
+
+      if (const auto output = pricerBuy.price(
+              reduce_order.timestamp, obp::Side::Ask, bookBuy, target_size);
+          output) {
+        std::cout << *output << '\n';
+      }
+      break;
+
+    case obp::Side::Ask:
+      bookSell.reduce(anonymous_order->price, reduce_order.size);
+      // std::cout << "bookSell: " << bookSell << '\n';
+
+      if (const auto output = pricerSell.price(
+              reduce_order.timestamp, obp::Side::Bid, bookSell, target_size);
+          output) {
+        std::cout << *output << '\n';
+      }
+      break;
+
+    default:
+      std::cerr << "Not there.\n";
+      break;
+    }
+  };
 
   while (!std::cin.eof()) {
     const auto order = obp::read_one(std::cin);
     if (order) {
-      std::cout << *order << '\n';
-
-      std::visit(
-          help::overloaded{
-              [&follower, &bookBuy, &bookSell, &pricer,
-               target_size](const obp::AddOrder &add_order) {
-                std::cout << "added?: " << follower.add(add_order) << '\n';
-                if (add_order.side == obp::Side::Bid) {
-                  std::cout << "Aggregated size for curent buy price: "
-                            << bookBuy.add(add_order.price, add_order.size)
-                            << '\n';
-
-                  if (const auto output =
-                          pricer.price(add_order.timestamp, obp::Side::Ask,
-                                       bookBuy, target_size);
-                      output) {
-                    std::cout << "output: " << *output << '\n';
-                  }
-                } else {
-                  std::cout << "Aggregated size for curent sell price: "
-                            << bookSell.add(add_order.price, add_order.size)
-                            << '\n';
-                  if (const auto output =
-                          pricer.price(add_order.timestamp, obp::Side::Bid,
-                                       bookSell, target_size);
-                      output) {
-                    std::cout << "output: " << *output << '\n';
-                  }
-                }
-              },
-
-              [&follower, &bookBuy, &bookSell, &pricer,
-               target_size](const obp::ReduceOrder &reduce_order) {
-                const auto anonymous_order = follower.reduce(reduce_order);
-                if (anonymous_order) {
-                  std::cout << "reduce to: " << anonymous_order->size << '\n';
-
-                  if (anonymous_order->side == obp::Side::Bid) {
-                    std::cout << "Aggregated size for curent buy price: "
-                              << bookBuy.reduce(anonymous_order->price,
-                                                reduce_order.size)
-                              << '\n';
-                    if (const auto output =
-                            pricer.price(reduce_order.timestamp, obp::Side::Ask,
-                                         bookBuy, target_size);
-                        output) {
-                      std::cout << "output: " << *output << '\n';
-                    }
-                  } else {
-                    std::cout << "Aggregated size for curent sell price: "
-                              << bookSell.reduce(anonymous_order->price,
-                                                 reduce_order.size)
-                              << '\n';
-                    if (const auto output =
-                            pricer.price(reduce_order.timestamp, obp::Side::Bid,
-                                         bookSell, target_size);
-                        output) {
-                      std::cout << "output: " << *output << '\n';
-                    }
-                  }
-                } else {
-                  std::cout << "Not there.\n";
-                }
-              },
-          },
-          *order);
-
-      std::cout << "-----------------------------------------------------------"
-                   "---------------------\n";
+      std::cout << "order: " << *order << '\n';
+      std::visit(help::overloaded{processOrderAdd, processOrderReduce}, *order);
     } else {
       std::cerr << "Cannot read one order\n";
     }

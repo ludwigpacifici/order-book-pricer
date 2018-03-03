@@ -16,17 +16,29 @@ struct PricerOutput {
 
 inline std::ostream &operator<<(std::ostream &stream,
                                 const PricerOutput &data) {
-  stream << "{"
-         << R"("timestamp": )" << data.timestamp << ", "
-         << R"("action": )" << data.action << ", "
-         << R"("total": )";
+  if constexpr (g_format == OutputFormat::Compact) {
+    stream << data.timestamp << " " << data.action << " ";
 
-  if (data.total) {
-    stream << *data.total;
+    if (data.total) {
+      stream << *data.total;
+    } else {
+      stream << "NA";
+    }
   } else {
-    stream << "NA";
+    stream << "{"
+           << R"("timestamp": )" << data.timestamp << ", "
+           << R"("action": )" << data.action << ", "
+           << R"("total": )";
+
+    if (data.total) {
+      stream << *data.total;
+    } else {
+      stream << "NA";
+    }
+    stream << "}";
   }
-  return stream << "}";
+
+  return stream;
 }
 } // namespace obp
 

@@ -25,6 +25,11 @@ inline std::optional<Order> read_one(std::istream &stream) {
   case OrderType::AddOrder: {
     std::string order_id;
     stream >> order_id;
+    if (order_id.empty()) {
+      std::cerr << "No order id provided\n";
+      return std::nullopt;
+    }
+
 
     char side_;
     stream >> side_;

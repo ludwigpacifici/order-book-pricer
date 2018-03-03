@@ -44,20 +44,18 @@ inline std::string to_string(const OrderType data) {
 using Order = std::variant<AddOrder, ReduceOrder>;
 
 inline std::ostream &operator<<(std::ostream &stream, const Order &data) {
-  std::visit(
+  return std::visit(
       help::overloaded{
-          [&stream](const AddOrder &data) {
-            stream << R"({")" << to_string(OrderType::AddOrder) << R"(": )"
-                   << data << "}";
+          [&stream](const AddOrder &data) -> std::ostream & {
+            return stream << R"({")" << to_string(OrderType::AddOrder)
+                          << R"(": )" << data << "}";
           },
-          [&stream](const ReduceOrder &data) {
-            stream << R"({")" << to_string(OrderType::ReduceOrder) << R"(": )"
-                   << data << "}";
+          [&stream](const ReduceOrder &data) -> std::ostream & {
+            return stream << R"({")" << to_string(OrderType::ReduceOrder)
+                          << R"(": )" << data << "}";
           },
       },
       data);
-
-  return stream;
 }
 } // namespace obp
 

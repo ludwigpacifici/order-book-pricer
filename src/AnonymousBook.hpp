@@ -30,6 +30,18 @@ public:
     return current_size;
   }
 
+  friend std::ostream &operator<<(std::ostream &stream,
+                                  const AnonymousBook &data) {
+    std::string separator;
+    stream << "{";
+    for (const auto &priceQuantity : data.m_priceLevels) {
+      stream << separator << R"(")" << std::get<const Price>(priceQuantity)
+             << R"(": )" << std::get<Quantity>(priceQuantity);
+      separator = ", ";
+    }
+    return stream << "}";
+  }
+
 private:
   PriceQuantity m_priceLevels;
 };
