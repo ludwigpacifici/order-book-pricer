@@ -130,10 +130,12 @@ int main(int argc, char *argv[]) {
     }
   };
 
-  while (!std::cin.eof()) {
-    const auto order = obp::read_one(std::cin);
+  std::string line;
+  while (std::getline(std::cin, line)) {
+    std::istringstream iss(line);
+    const auto order = obp::read_one(iss);
+
     if (order) {
-      std::cout << "order: " << *order << '\n';
       std::visit(help::overloaded{processOrderAdd, processOrderReduce}, *order);
     } else {
       std::cerr << "Cannot read one order\n";

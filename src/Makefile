@@ -4,7 +4,9 @@ SRC_FILES=$(wildcard *.cpp)
 HDR_FILES=$(wildcard *.hpp)
 BIN=order-book-pricer
 
-all:
+all: compile
+
+compile:
 	$(CXX) $(CXXFLAGS) main.cpp -o $(BIN)
 
 clang_format:

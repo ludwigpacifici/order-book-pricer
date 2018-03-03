@@ -30,7 +30,6 @@ inline std::optional<Order> read_one(std::istream &stream) {
       return std::nullopt;
     }
 
-
     char side_;
     stream >> side_;
     const auto side = side_from(side_);
