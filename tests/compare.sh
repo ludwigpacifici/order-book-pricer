@@ -24,5 +24,5 @@ cd $root_directory
 diff_stream ./data/basic.in.txt ./data/basic.out.txt 200
 
 # uncompress_and_diff_stream ./data/pricer.in.gz ./data/pricer.out.10000.gz 100000
-# uncompress_and_diff_stream ./data/pricer.in.gz ./data/pricer.out.200.gz 200
+uncompress_and_diff_stream ./data/pricer.in.gz ./data/pricer.out.200.gz 200
 uncompress_and_diff_stream ./data/pricer.in.gz ./data/pricer.out.1.gz 1

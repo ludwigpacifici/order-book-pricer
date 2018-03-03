@@ -6,7 +6,7 @@
 namespace obp {
 class Pricer {
 public:
-  Pricer() : m_isNotApplicable{true}, m_lastFinalPrice{0} {}
+  Pricer() : m_isNotApplicable{true}, m_lastFinalPrice{0}, m_lastFinalQuantity{0} {}
 
   template <typename Book>
   std::optional<PricerOutput>
@@ -41,7 +41,7 @@ public:
     // level. Hence, the final price will remain the same as the
     // previous iteration.
     if (m_isNotApplicable == false and m_lastFinalPrice == price_hint and
-        quantity_hint >= target_size) {
+        quantity_hint >= m_lastFinalQuantity) {
       return std::nullopt;
     }
 
@@ -56,6 +56,7 @@ public:
 private:
   bool m_isNotApplicable;
   Price m_lastFinalPrice;
+  Quantity m_lastFinalQuantity;
 
   template <typename Book>
   std::optional<PricerOutput>
@@ -82,6 +83,7 @@ private:
     if (target_size == Quantity(0)) {
       m_isNotApplicable = false;
       m_lastFinalPrice = price_level;
+      m_lastFinalQuantity = quantity_level;
 #ifdef DEBUG
     std::cout << "end price_level: " << price_level << '\n';
     std::cout << "end m_lastFinalPrice: " << m_lastFinalPrice << '\n';
@@ -92,6 +94,7 @@ private:
     if (m_isNotApplicable == false) {
       m_isNotApplicable = true;
       m_lastFinalPrice = price_level;
+      m_lastFinalQuantity = quantity_level;
 #ifdef DEBUG
     std::cout << "end price_level: " << price_level << '\n';
     std::cout << "end m_lastFinalPrice: " << m_lastFinalPrice << '\n';
