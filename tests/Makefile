@@ -6,8 +6,11 @@ release:
 debug:
 	make --directory=.. $@
 
-test: release
+test:
 	./compare.sh
 
-perf: debug
-	./perf.sh
+perf:
+	./$@.sh
+
+time:
+	./$@.sh

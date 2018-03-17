@@ -27,4 +27,10 @@ clean:
 	rm -f $(BIN)
 
 test:
-	make --directory=.. test
+	make --directory=.. $@
+
+perf:
+	make --directory=.. $@
+
+time:
+	make --directory=.. $@

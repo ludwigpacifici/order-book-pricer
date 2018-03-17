@@ -172,11 +172,6 @@ int main(int argc, char *argv[]) {
         std::visit(help::overloaded{processOrderAdd, processOrderReduce},
                    *order);
       }
-
-#ifdef DEBUG
-      std::cout << "------------------------------\n";
-#endif
-
     } else {
       std::cerr << "Cannot read one order\n";
     }

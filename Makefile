@@ -11,3 +11,6 @@ test:
 
 perf:
 	make --directory=tests $@
+
+time:
+	make --directory=tests $@
