@@ -12,7 +12,7 @@ release:
 	$(CXX) $(CXXFLAGS) $(RELEASE) main.cpp -o $(BIN)
 
 debug:
-	$(CXX) $(CXXFLAGS) $(DEBUG) -DDEBUG main.cpp -o $(BIN)
+	$(CXX) $(CXXFLAGS) $(DEBUG) main.cpp -o $(BIN)
 
 clang_format:
 	$(foreach file,$(HDR_FILES) $(SRC_FILES),clang-format -i $(file);)
