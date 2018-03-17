@@ -2,6 +2,10 @@
 *~
 /data/
 /src/order-book-pricer
+/tests/order-book-pricer.svg
+/tests/out.folded
+/tests/perf.data
+/tests/perf.data.old
 GPATH
 GRTAGS
 GTAGS

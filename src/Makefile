@@ -1,13 +1,18 @@
 CXX=g++
-CXXFLAGS=-std=c++17 -Wall -Wextra -Werror -Wpedantic -O2
+CXXFLAGS=-std=c++17 -Wall -Wextra -Werror -Wpedantic
+RELEASE=-O2
+DEBUG=-g -O0
 SRC_FILES=$(wildcard *.cpp)
 HDR_FILES=$(wildcard *.hpp)
 BIN=order-book-pricer
 
-all: compile
+all: release
 
-compile:
-	$(CXX) $(CXXFLAGS) main.cpp -o $(BIN)
+release:
+	$(CXX) $(CXXFLAGS) $(RELEASE) main.cpp -o $(BIN)
+
+debug:
+	$(CXX) $(CXXFLAGS) $(DEBUG) main.cpp -o $(BIN)
 
 clang_format:
 	$(foreach file,$(HDR_FILES) $(SRC_FILES),clang-format -i $(file);)

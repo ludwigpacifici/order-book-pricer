@@ -1,7 +1,13 @@
 all: test
 
-compile:
+release:
 	make --directory=.. $@
 
-test: compile
+debug:
+	make --directory=.. $@
+
+test: release
 	./compare.sh
+
+perf: debug
+	./perf.sh
