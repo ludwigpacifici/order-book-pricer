@@ -79,7 +79,6 @@ int main(int argc, char *argv[]) {
     case obp::Side::Bid:
       bookBuy.add(add_order.price, add_order.size);
 
-// #define DEBUG
 #ifdef DEBUG
       std::cout << "order: " << add_order << '\n';
       std::cout << "BookBuy: " << bookBuy << '\n';
