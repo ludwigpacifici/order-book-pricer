@@ -1,6 +1,5 @@
 *.o
 *~
-/data/
 /src/order-book-pricer
 /tests/order-book-pricer-debug.svg
 /tests/order-book-pricer-release.svg
