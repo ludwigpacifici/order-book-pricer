@@ -18,12 +18,18 @@ struct AddOrder {
 };
 
 inline std::ostream &operator<<(std::ostream &stream, const AddOrder &data) {
-  return stream << "{"
-                << R"("timestamp": )" << data.timestamp << ", "
-                << R"("order_id": ")" << data.order_id << R"(", )"
-                << R"("side": ")" << data.side << R"(", )"
-                << R"("price": )" << data.price << ", "
-                << R"("size": )" << data.size << "}";
+  if constexpr (g_format == OutputFormat::Compact) {
+    stream << data.timestamp << " A " << data.order_id << ' ' << data.side << ' '
+           << data.price << ' ' << data.size;
+  } else {
+    stream << "{"
+           << R"("timestamp": )" << data.timestamp << ", "
+           << R"("order_id": ")" << data.order_id << R"(", )"
+           << R"("side": ")" << data.side << R"(", )"
+           << R"("price": )" << data.price << ", "
+           << R"("size": )" << data.size << "}";
+  }
+  return stream;
 }
 } // namespace obp
 #endif

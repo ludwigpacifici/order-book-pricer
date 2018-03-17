@@ -5,10 +5,11 @@
 
 #include <iostream>
 #include <sstream>
+#include <string_view>
 
 static std::string usage(const char *executable_name) {
   std::stringstream text;
-  text << "\nusage: " << executable_name << " <target_size>\n\n";
+  text << "\nusage: " << executable_name << " [<target_size>|--dry-run]\n\n";
 
   text
       << "Pricer, that analyzes such a log file. Pricer takes one "
@@ -54,7 +55,14 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  const auto target_size = parse_target_size(argv[0], argv[1]);
+  obp::Quantity target_size;
+  bool dry_run = false;
+
+  if (std::string_view(argv[1]) == "--dry-run") {
+    dry_run = true;
+  } else {
+    target_size = parse_target_size(argv[0], argv[1]);
+  }
 
   obp::OrderFollower follower;
   obp::AnonymousBookBuy bookBuy;
@@ -107,51 +115,51 @@ int main(int argc, char *argv[]) {
     }
   };
 
-  auto processOrderReduce = [&follower, &bookBuy, &bookSell, &pricerBuy,
-                             &pricerSell, target_size](
-                                const obp::ReduceOrder &reduce_order) {
-    const auto anonymous_order = follower.reduce(reduce_order);
+  auto processOrderReduce =
+      [&follower, &bookBuy, &bookSell, &pricerBuy, &pricerSell,
+       target_size](const obp::ReduceOrder &reduce_order) {
+        const auto anonymous_order = follower.reduce(reduce_order);
 
-    switch (anonymous_order->side) {
-    case obp::Side::Bid: {
-      const auto remaining_quantity =
-          bookBuy.reduce(anonymous_order->price, reduce_order.size);
-
-#ifdef DEBUG
-      std::cout << "order: " << reduce_order << '\n';
-      std::cout << "BookBuy: " << bookBuy << '\n';
-#endif
-
-      if (const auto output = pricerBuy.price(
-              reduce_order.timestamp, obp::Side::Ask, bookBuy,
-              anonymous_order->price, remaining_quantity, target_size);
-          output) {
-        std::cout << *output << '\n';
-      }
-    } break;
-
-    case obp::Side::Ask: {
-      const auto remaining_quantity =
-          bookSell.reduce(anonymous_order->price, reduce_order.size);
+        switch (anonymous_order->side) {
+        case obp::Side::Bid: {
+          const auto remaining_quantity =
+              bookBuy.reduce(anonymous_order->price, reduce_order.size);
 
 #ifdef DEBUG
-      std::cout << "order: " << reduce_order << '\n';
-      std::cout << "bookSell: " << bookSell << '\n';
+          std::cout << "order: " << reduce_order << '\n';
+          std::cout << "BookBuy: " << bookBuy << '\n';
 #endif
 
-      if (const auto output = pricerSell.price(
-              reduce_order.timestamp, obp::Side::Bid, bookSell,
-              anonymous_order->price, remaining_quantity, target_size);
-          output) {
-        std::cout << *output << '\n';
-      }
-    } break;
+          if (const auto output = pricerBuy.price(
+                  reduce_order.timestamp, obp::Side::Ask, bookBuy,
+                  anonymous_order->price, remaining_quantity, target_size);
+              output) {
+            std::cout << *output << '\n';
+          }
+        } break;
 
-    default:
-      std::cerr << "Not there.\n";
-      break;
-    }
-  };
+        case obp::Side::Ask: {
+          const auto remaining_quantity =
+              bookSell.reduce(anonymous_order->price, reduce_order.size);
+
+#ifdef DEBUG
+          std::cout << "order: " << reduce_order << '\n';
+          std::cout << "bookSell: " << bookSell << '\n';
+#endif
+
+          if (const auto output = pricerSell.price(
+                  reduce_order.timestamp, obp::Side::Bid, bookSell,
+                  anonymous_order->price, remaining_quantity, target_size);
+              output) {
+            std::cout << *output << '\n';
+          }
+        } break;
+
+        default:
+          std::cerr << "Not there.\n";
+          break;
+        }
+      };
 
   std::string line;
   while (std::getline(std::cin, line)) {
@@ -159,7 +167,12 @@ int main(int argc, char *argv[]) {
     const auto order = obp::read_one(iss);
 
     if (order) {
-      std::visit(help::overloaded{processOrderAdd, processOrderReduce}, *order);
+      if (dry_run) {
+        std::cout << *order << '\n';
+      } else {
+        std::visit(help::overloaded{processOrderAdd, processOrderReduce},
+                   *order);
+      }
 
 #ifdef DEBUG
       std::cout << "------------------------------\n";

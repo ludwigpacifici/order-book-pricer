@@ -47,12 +47,22 @@ inline std::ostream &operator<<(std::ostream &stream, const Order &data) {
   return std::visit(
       help::overloaded{
           [&stream](const AddOrder &data) -> std::ostream & {
-            return stream << R"({")" << to_string(OrderType::AddOrder)
-                          << R"(": )" << data << "}";
+            if constexpr (g_format == OutputFormat::Compact) {
+              stream << data;
+            } else {
+              stream << R"({")" << to_string(OrderType::AddOrder) << R"(": )"
+                     << data << "}";
+            }
+            return stream;
           },
           [&stream](const ReduceOrder &data) -> std::ostream & {
-            return stream << R"({")" << to_string(OrderType::ReduceOrder)
-                          << R"(": )" << data << "}";
+            if constexpr (g_format == OutputFormat::Compact) {
+              stream << data;
+            } else {
+              stream << R"({")" << to_string(OrderType::ReduceOrder) << R"(": )"
+                     << data << "}";
+            }
+            return stream;
           },
       },
       data);

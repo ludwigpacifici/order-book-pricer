@@ -14,10 +14,15 @@ struct ReduceOrder {
 };
 
 inline std::ostream &operator<<(std::ostream &stream, const ReduceOrder &data) {
-  return stream << "{"
-                << R"("timestamp": )" << data.timestamp << ", "
-                << R"("order_id": ")" << data.order_id << R"(", )"
-                << R"("size": )" << data.size << "}";
+  if constexpr (g_format == OutputFormat::Compact) {
+    stream << data.timestamp << " R " << data.order_id << ' ' << data.size;
+  } else {
+    stream << "{"
+           << R"("timestamp": )" << data.timestamp << ", "
+           << R"("order_id": ")" << data.order_id << R"(", )"
+           << R"("size": )" << data.size << "}";
+  }
+  return stream;
 }
 } // namespace obp
 

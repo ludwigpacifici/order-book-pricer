@@ -7,6 +7,16 @@
 
 namespace obp {
 
+namespace internal {
+inline std::string remove_decimal_separator(std::string price) {
+  price[price.size() - 3] = price[price.size() - 2];
+  price[price.size() - 2] = price[price.size() - 1];
+  price.pop_back();
+
+  return price;
+}
+} // namespace internal
+
 inline std::optional<Order> read_one(std::istream &stream) {
   std::time_t timestamp;
   stream >> timestamp;
@@ -39,8 +49,10 @@ inline std::optional<Order> read_one(std::istream &stream) {
       return std::nullopt;
     }
 
-    float price;
-    stream >> price;
+    std::string buffer;
+    stream >> buffer;
+    const std::uint64_t price =
+        std::stoull(internal::remove_decimal_separator(buffer));
 
     std::uint64_t size;
     stream >> size;

@@ -6,21 +6,13 @@
 namespace obp {
 class Pricer {
 public:
-  Pricer() : m_isNotApplicable{true}, m_lastFinalPrice{0}, m_lastFinalQuantity{0} {}
+  Pricer()
+      : m_isNotApplicable{true}, m_lastFinalPrice{0}, m_lastFinalQuantity{0} {}
 
   template <typename Book>
   std::optional<PricerOutput>
   price(const std::time_t timestamp, const Side opposite_side, const Book &book,
         const Price price_hint, Quantity target_size) {
-
-// #define DEBUG
-#ifdef DEBUG
-    std::cout << "price_hint: " << price_hint << '\n';
-    std::cout << "m_lastFinalPrice: " << m_lastFinalPrice << '\n';
-    std::cout << "comp(m_lastFinalPrice, price_hint): "
-              << book.priceLevels().key_comp()(m_lastFinalPrice, price_hint)
-              << '\n';
-#endif
 
     if (m_isNotApplicable == false and
         (book.priceLevels().key_comp()(m_lastFinalPrice, price_hint) or
@@ -68,6 +60,11 @@ private:
     for (const auto &pair : book.priceLevels()) {
       price_level = std::get<const Price>(pair);
 
+      if (std::get<Quantity>(pair) == Quantity{0}) {
+        // Skip empty level
+        continue;
+      }
+
       if (target_size <= std::get<Quantity>(pair)) {
         quantity_level = target_size;
         price += Price(price_level.value * quantity_level.value);
@@ -84,10 +81,6 @@ private:
       m_isNotApplicable = false;
       m_lastFinalPrice = price_level;
       m_lastFinalQuantity = quantity_level;
-#ifdef DEBUG
-    std::cout << "end price_level: " << price_level << '\n';
-    std::cout << "end m_lastFinalPrice: " << m_lastFinalPrice << '\n';
-#endif
       return std::make_optional(PricerOutput{timestamp, opposite_side, price});
     }
 
@@ -95,10 +88,6 @@ private:
       m_isNotApplicable = true;
       m_lastFinalPrice = price_level;
       m_lastFinalQuantity = quantity_level;
-#ifdef DEBUG
-    std::cout << "end price_level: " << price_level << '\n';
-    std::cout << "end m_lastFinalPrice: " << m_lastFinalPrice << '\n';
-#endif
       return std::make_optional(
           PricerOutput{timestamp, opposite_side, std::nullopt});
     }
