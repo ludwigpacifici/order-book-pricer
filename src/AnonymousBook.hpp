@@ -12,6 +12,12 @@ private:
   using PriceQuantity = std::map<Price, Quantity, CompareFn>;
 
 public:
+  AnonymousBook() = default;
+  AnonymousBook(AnonymousBook &&) = default;
+  AnonymousBook &operator=(AnonymousBook &&) = default;
+  AnonymousBook(const AnonymousBook &) = delete;
+  AnonymousBook &operator=(const AnonymousBook &&) = delete;
+
   const PriceQuantity &priceLevels() const { return m_priceLevels; }
 
   Quantity add(const Price &price, const Quantity &size) {

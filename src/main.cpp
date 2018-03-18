@@ -1,11 +1,4 @@
-#include "AnonymousBook.hpp"
-#include "InputReader.hpp"
-#include "OrderFollower.hpp"
-#include "Pricer.hpp"
-
-#include <iostream>
-#include <sstream>
-#include <string_view>
+#include "Core.hpp"
 
 static std::string usage(const char *executable_name) {
   std::stringstream text;
@@ -55,126 +48,10 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  obp::Quantity target_size;
-  bool dry_run = false;
-
   if (std::string_view(argv[1]) == "--dry-run") {
-    dry_run = true;
+    obp::run();
   } else {
-    target_size = parse_target_size(argv[0], argv[1]);
-  }
-
-  obp::OrderFollower follower;
-  obp::AnonymousBookBuy bookBuy;
-  obp::AnonymousBookSell bookSell;
-  obp::Pricer pricerBuy;
-  obp::Pricer pricerSell;
-
-  auto processOrderAdd = [&follower, &bookBuy, &bookSell, &pricerBuy,
-                          &pricerSell,
-                          target_size](const obp::AddOrder &add_order) {
-    follower.add(add_order);
-
-    switch (add_order.side) {
-    case obp::Side::Bid:
-      bookBuy.add(add_order.price, add_order.size);
-
-#ifdef DEBUG
-      std::cout << "order: " << add_order << '\n';
-      std::cout << "BookBuy: " << bookBuy << '\n';
-#endif
-
-      if (const auto output =
-              pricerBuy.price(add_order.timestamp, obp::Side::Ask, bookBuy,
-                              add_order.price, target_size);
-          output) {
-        std::cout << *output << '\n';
-      }
-      break;
-
-    case obp::Side::Ask:
-      bookSell.add(add_order.price, add_order.size);
-
-#ifdef DEBUG
-      std::cout << "order: " << add_order << '\n';
-      std::cout << "bookSell: " << bookSell << '\n';
-#endif
-
-      if (const auto output =
-              pricerSell.price(add_order.timestamp, obp::Side::Bid, bookSell,
-                               add_order.price, target_size);
-          output) {
-        std::cout << *output << '\n';
-      }
-      break;
-
-    default:
-      std::cerr << "Unknown order add side: " << add_order.side << '\n';
-      break;
-    }
-  };
-
-  auto processOrderReduce =
-      [&follower, &bookBuy, &bookSell, &pricerBuy, &pricerSell,
-       target_size](const obp::ReduceOrder &reduce_order) {
-        const auto anonymous_order = follower.reduce(reduce_order);
-
-        switch (anonymous_order->side) {
-        case obp::Side::Bid: {
-          const auto remaining_quantity =
-              bookBuy.reduce(anonymous_order->price, reduce_order.size);
-
-#ifdef DEBUG
-          std::cout << "order: " << reduce_order << '\n';
-          std::cout << "BookBuy: " << bookBuy << '\n';
-#endif
-
-          if (const auto output = pricerBuy.price(
-                  reduce_order.timestamp, obp::Side::Ask, bookBuy,
-                  anonymous_order->price, remaining_quantity, target_size);
-              output) {
-            std::cout << *output << '\n';
-          }
-        } break;
-
-        case obp::Side::Ask: {
-          const auto remaining_quantity =
-              bookSell.reduce(anonymous_order->price, reduce_order.size);
-
-#ifdef DEBUG
-          std::cout << "order: " << reduce_order << '\n';
-          std::cout << "bookSell: " << bookSell << '\n';
-#endif
-
-          if (const auto output = pricerSell.price(
-                  reduce_order.timestamp, obp::Side::Bid, bookSell,
-                  anonymous_order->price, remaining_quantity, target_size);
-              output) {
-            std::cout << *output << '\n';
-          }
-        } break;
-
-        default:
-          std::cerr << "Not there.\n";
-          break;
-        }
-      };
-
-  std::string line;
-  while (std::getline(std::cin, line)) {
-    std::istringstream iss(line);
-    const auto order = obp::read_one(iss);
-
-    if (order) {
-      if (dry_run) {
-        std::cout << *order << '\n';
-      } else {
-        std::visit(help::overloaded{processOrderAdd, processOrderReduce},
-                   *order);
-      }
-    } else {
-      std::cerr << "Cannot read one order\n";
-    }
+    obp::run(parse_target_size(argv[0], argv[1]));
   }
 
   return EXIT_SUCCESS;

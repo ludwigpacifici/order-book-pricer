@@ -19,8 +19,8 @@ struct AddOrder {
 
 inline std::ostream &operator<<(std::ostream &stream, const AddOrder &data) {
   if constexpr (g_format == OutputFormat::Compact) {
-    stream << data.timestamp << " A " << data.order_id << ' ' << data.side << ' '
-           << data.price << ' ' << data.size;
+    stream << data.timestamp << " A " << data.order_id << ' ' << data.side
+           << ' ' << data.price << ' ' << data.size;
   } else {
     stream << "{"
            << R"("timestamp": )" << data.timestamp << ", "

@@ -9,6 +9,11 @@ public:
   Pricer()
       : m_isNotApplicable{true}, m_lastFinalPrice{0}, m_lastFinalQuantity{0} {}
 
+  Pricer(Pricer &&) = default;
+  Pricer &operator=(Pricer &&) = default;
+  Pricer(const Pricer &) = delete;
+  Pricer &operator=(const Pricer &&) = delete;
+
   template <typename Book>
   std::optional<PricerOutput>
   price(const std::time_t timestamp, const Side opposite_side, const Book &book,
