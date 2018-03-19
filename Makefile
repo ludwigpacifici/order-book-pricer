@@ -14,3 +14,7 @@ perf:
 
 time:
 	make --directory=tests $@
+
+clean:
+	make --directory=tests $@
+	make --directory=src $@

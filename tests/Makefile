@@ -14,3 +14,6 @@ perf:
 
 time:
 	./$@.sh
+
+clean:
+	rm -rf *.svg out.folded perf.data perf.data.old

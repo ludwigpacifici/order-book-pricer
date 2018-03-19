@@ -33,22 +33,6 @@ inline void loop() {
 
 inline void run() { loop(); }
 
-template <typename ProcessAddFn, typename ProcessReduceFn>
-void loop(ProcessAddFn &&processOrderAdd,
-          ProcessReduceFn &&processOrderReduce) {
-  std::string line;
-  while (std::getline(std::cin, line)) {
-    std::istringstream iss(line);
-    const auto order = obp::read_one(iss);
-
-    if (order) {
-      std::visit(help::overloaded{processOrderAdd, processOrderReduce}, *order);
-    } else {
-      std::cerr << "Cannot read one order\n";
-    }
-  }
-}
-
 inline void run(obp::Quantity target_size) {
   obp::OrderFollower follower;
   obp::AnonymousBookBuy bookBuy;

@@ -1,8 +1,7 @@
 *.o
 *~
 /src/order-book-pricer
-/tests/order-book-pricer-debug.svg
-/tests/order-book-pricer-release.svg
+/tests/order-book-pricer-*.svg
 /tests/out.folded
 /tests/perf.data
 /tests/perf.data.old

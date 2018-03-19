@@ -6,10 +6,13 @@ function generate_flamegraph {
 
     make $mode
 
-    perf record -F 99 -g ./compare.sh
-    perf script | stackcollapse-perf > out.folded
-    grep $executable_name out.folded | flamegraph > order-book-pricer-$mode.svg
+    perf record -o tests/perf.data -F 99 -g tests/compare.sh
+    perf script -i tests/perf.data | stackcollapse-perf > tests/out.folded
+    grep $executable_name tests/out.folded | flamegraph > tests/order-book-pricer-$mode.svg
 }
+
+root_directory=`git rev-parse --show-toplevel`
+cd $root_directory
 
 generate_flamegraph "release"
 generate_flamegraph "debug"

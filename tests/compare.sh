@@ -15,7 +15,7 @@ function uncompress_and_diff_stream {
     local output=$2
     local threshold=$3
 
-    diff <( zcat $input| ./src/order-book-pricer $threshold ) <( zcat $output )
+    diff <( zcat $input | ./src/order-book-pricer $threshold ) <( zcat $output )
 }
 
 root_directory=`git rev-parse --show-toplevel`
