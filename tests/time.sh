@@ -8,7 +8,7 @@ function run_timings {
     make $mode > /dev/null
 
     echo -ne "[$mode][identity]"
-    time zcat ./data/pricer.in.gz | ./src/order-book-pricer --dry-run > /dev/null
+    time zcat ./data/pricer.in.gz | ./src/order-book-pricer --identity > /dev/null
     echo -ne "\n[$mode][1]"
     time zcat ./data/pricer.in.gz | ./src/order-book-pricer 1 > /dev/null
     echo -ne "\n[$mode][200]"

@@ -1,8 +1,11 @@
 #include "Core.hpp"
+#include "Timer.hpp"
+
+#include <algorithm>
 
 static std::string usage(const char *executable_name) {
   std::stringstream text;
-  text << "\nusage: " << executable_name << " [<target_size>|--dry-run]\n\n";
+  text << "\nusage: " << executable_name << " [<target_size>|--identity]\n\n";
 
   text
       << "Pricer, that analyzes such a log file. Pricer takes one "
@@ -42,16 +45,36 @@ static obp::Quantity parse_target_size(const char *executable_name,
   std::exit(EXIT_FAILURE);
 }
 
+template <typename Iterator>
+constexpr bool is_print_elapse_time(Iterator first, Iterator last) {
+  return std::any_of(first, last, [](const std::string_view &arg) {
+    return arg == "--elapsed-time";
+  });
+}
+
+template <typename Iterator>
+constexpr bool is_identity(Iterator first, Iterator last) {
+  return std::any_of(first, last, [](const std::string_view &arg) {
+    return arg == "--identity";
+  });
+}
+
 int main(int argc, char *argv[]) {
-  if (argc != 2) {
+  if (argc < 2) {
     std::cerr << usage(argv[0]) << '\n';
     return EXIT_FAILURE;
   }
 
-  if (std::string_view(argv[1]) == "--dry-run") {
+  help::Timer timer;
+
+  if (is_identity(argv + 0, argv + argc)) {
     obp::run();
   } else {
     obp::run(parse_target_size(argv[0], argv[1]));
+  }
+
+  if (is_print_elapse_time(argv + 0, argv + argc)) {
+    timer.print_elapsed_time();
   }
 
   return EXIT_SUCCESS;
