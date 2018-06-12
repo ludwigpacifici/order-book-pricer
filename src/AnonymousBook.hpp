@@ -13,10 +13,11 @@ private:
 
 public:
   AnonymousBook() = default;
-  AnonymousBook(AnonymousBook &&) = default;
-  AnonymousBook &operator=(AnonymousBook &&) = default;
+  ~AnonymousBook() = default;
+  AnonymousBook(AnonymousBook &&) = delete;
+  AnonymousBook &operator=(AnonymousBook &&) = delete;
   AnonymousBook(const AnonymousBook &) = delete;
-  AnonymousBook &operator=(const AnonymousBook &&) = delete;
+  AnonymousBook &operator=(const AnonymousBook &) = delete;
 
   const PriceQuantity &priceLevels() const { return m_priceLevels; }
 

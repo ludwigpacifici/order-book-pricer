@@ -12,6 +12,12 @@ struct Quantity {
 
   explicit Quantity(const std::uint64_t a_value) : value{a_value} {}
 
+  ~Quantity() = default;
+  Quantity(const Quantity &) = default;
+  Quantity(Quantity &&) = default;
+  Quantity &operator=(const Quantity &) = default;
+  Quantity &operator=(Quantity &&) = default;
+
   Quantity &operator-=(const Quantity &other) {
     value -= other.value;
     return *this;
@@ -19,11 +25,6 @@ struct Quantity {
 
   Quantity &operator+=(const Quantity &other) {
     value += other.value;
-    return *this;
-  }
-
-  Quantity &operator=(const Quantity &other) {
-    value = other.value;
     return *this;
   }
 };

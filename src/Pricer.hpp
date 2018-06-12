@@ -9,17 +9,18 @@ public:
   Pricer()
       : m_isNotApplicable{true}, m_lastFinalPrice{0}, m_lastFinalQuantity{0} {}
 
-  Pricer(Pricer &&) = default;
-  Pricer &operator=(Pricer &&) = default;
+  ~Pricer() = default;
+  Pricer(Pricer &&) = delete;
+  Pricer &operator=(Pricer &&) = delete;
   Pricer(const Pricer &) = delete;
-  Pricer &operator=(const Pricer &&) = delete;
+  Pricer &operator=(const Pricer &) = delete;
 
   template <typename Book>
   std::optional<PricerOutput>
   price(const std::time_t timestamp, const Side opposite_side, const Book &book,
         const Price price_hint, Quantity target_size) {
 
-    if (m_isNotApplicable == false and
+    if (!m_isNotApplicable and
         (book.priceLevels().key_comp()(m_lastFinalPrice, price_hint) or
          m_lastFinalPrice == price_hint)) {
       return std::nullopt;
@@ -37,12 +38,12 @@ public:
     // Reducing at the limit but not enough to go to the next price
     // level. Hence, the final price will remain the same as the
     // previous iteration.
-    if (m_isNotApplicable == false and m_lastFinalPrice == price_hint and
+    if (!m_isNotApplicable and m_lastFinalPrice == price_hint and
         quantity_hint >= m_lastFinalQuantity) {
       return std::nullopt;
     }
 
-    if (m_isNotApplicable == false and
+    if (!m_isNotApplicable and
         book.priceLevels().key_comp()(m_lastFinalPrice, price_hint)) {
       return std::nullopt;
     }
@@ -89,7 +90,7 @@ private:
       return std::make_optional(PricerOutput{timestamp, opposite_side, price});
     }
 
-    if (m_isNotApplicable == false) {
+    if (!m_isNotApplicable) {
       m_isNotApplicable = true;
       m_lastFinalPrice = price_level;
       m_lastFinalQuantity = quantity_level;

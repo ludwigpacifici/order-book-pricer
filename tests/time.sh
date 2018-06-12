@@ -9,11 +9,11 @@ function run_timings {
 
     echo -ne "[$mode][identity]"
     time zcat ./data/pricer.in.gz | ./src/order-book-pricer --identity > /dev/null
-    echo -ne "\n[$mode][1]"
+    echo -ne "\n[$mode][target-size: 1]"
     time zcat ./data/pricer.in.gz | ./src/order-book-pricer 1 > /dev/null
-    echo -ne "\n[$mode][200]"
+    echo -ne "\n[$mode][target-size: 200]"
     time zcat ./data/pricer.in.gz | ./src/order-book-pricer 200 > /dev/null
-    echo -ne "\n[$mode][10000]"
+    echo -ne "\n[$mode][target-size: 10000]"
     time zcat ./data/pricer.in.gz | ./src/order-book-pricer 10000 > /dev/null
     echo
 }
