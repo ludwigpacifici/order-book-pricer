@@ -1,4 +1,4 @@
-CXX=g++
+CXX=clang++
 CXXFLAGS=-std=c++17 -Wall -Wextra -Werror -Wpedantic
 RELEASE=-O2
 DEBUG=-g -O0

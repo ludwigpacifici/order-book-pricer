@@ -11,7 +11,7 @@ namespace internal {
 template <typename CallBackFn> void loop(CallBackFn &&call_back) {
   std::string line;
   while (std::getline(std::cin, line)) {
-    std::istringstream iss(line);
+    std::istringstream iss(line, std::ios_base::in);
     const auto order = obp::read_one(iss);
 
     if (order) {
@@ -33,7 +33,48 @@ inline void loop() {
 
 inline void run() { loop(); }
 
-inline void run(obp::Quantity target_size) {
+template <typename AnonymousBook, typename Pricer>
+void processOrderAddSide(AnonymousBook &book, Pricer &pricer,
+                         const obp::AddOrder &add_order,
+                         const Side opposite_side,
+                         const obp::Quantity target_size) {
+  book.add(add_order.price, add_order.size);
+
+#ifdef DEBUG
+  std::cout << "order: " << add_order << '\n';
+  std::cout << "Book: " << book << '\n';
+#endif
+
+  if (const auto output = pricer.price(add_order.timestamp, opposite_side, book,
+                                       add_order.price, target_size);
+      output) {
+    std::cout << *output << '\n';
+  }
+}
+
+template <typename AnonymousBook, typename Pricer>
+void processOrderReduceSide(
+    AnonymousBook &book, Pricer &pricer, const ReduceOrder &reduce_order,
+    const std::optional<OrderFollower::AddOrderAnonymous> &anonymous_order,
+    const Side opposite_side, const Quantity target_size) {
+
+  const auto remaining_quantity =
+      book.reduce(anonymous_order->price, reduce_order.size);
+
+#ifdef DEBUG
+  std::cout << "order: " << reduce_order << '\n';
+  std::cout << "Book: " << book << '\n';
+#endif
+
+  if (const auto output =
+          pricer.price(reduce_order.timestamp, opposite_side, book,
+                       anonymous_order->price, remaining_quantity, target_size);
+      output) {
+    std::cout << *output << '\n';
+  }
+}
+
+inline void run(const obp::Quantity target_size) {
   obp::OrderFollower follower;
   obp::AnonymousBookBuy bookBuy;
   obp::AnonymousBookSell bookSell;
@@ -47,35 +88,13 @@ inline void run(obp::Quantity target_size) {
 
     switch (add_order.side) {
     case obp::Side::Bid:
-      bookBuy.add(add_order.price, add_order.size);
-
-#ifdef DEBUG
-      std::cout << "order: " << add_order << '\n';
-      std::cout << "BookBuy: " << bookBuy << '\n';
-#endif
-
-      if (const auto output =
-              pricerBuy.price(add_order.timestamp, obp::Side::Ask, bookBuy,
-                              add_order.price, target_size);
-          output) {
-        std::cout << *output << '\n';
-      }
+      processOrderAddSide(bookBuy, pricerBuy, add_order, obp::Side::Ask,
+                          target_size);
       break;
 
     case obp::Side::Ask:
-      bookSell.add(add_order.price, add_order.size);
-
-#ifdef DEBUG
-      std::cout << "order: " << add_order << '\n';
-      std::cout << "bookSell: " << bookSell << '\n';
-#endif
-
-      if (const auto output =
-              pricerSell.price(add_order.timestamp, obp::Side::Bid, bookSell,
-                               add_order.price, target_size);
-          output) {
-        std::cout << *output << '\n';
-      }
+      processOrderAddSide(bookSell, pricerSell, add_order, obp::Side::Bid,
+                          target_size);
       break;
 
     default:
@@ -90,39 +109,15 @@ inline void run(obp::Quantity target_size) {
         const auto anonymous_order = follower.reduce(reduce_order);
 
         switch (anonymous_order->side) {
-        case obp::Side::Bid: {
-          const auto remaining_quantity =
-              bookBuy.reduce(anonymous_order->price, reduce_order.size);
+        case obp::Side::Bid:
+          processOrderReduceSide(bookBuy, pricerBuy, reduce_order,
+                                 anonymous_order, obp::Side::Ask, target_size);
+          break;
 
-#ifdef DEBUG
-          std::cout << "order: " << reduce_order << '\n';
-          std::cout << "BookBuy: " << bookBuy << '\n';
-#endif
-
-          if (const auto output = pricerBuy.price(
-                  reduce_order.timestamp, obp::Side::Ask, bookBuy,
-                  anonymous_order->price, remaining_quantity, target_size);
-              output) {
-            std::cout << *output << '\n';
-          }
-        } break;
-
-        case obp::Side::Ask: {
-          const auto remaining_quantity =
-              bookSell.reduce(anonymous_order->price, reduce_order.size);
-
-#ifdef DEBUG
-          std::cout << "order: " << reduce_order << '\n';
-          std::cout << "bookSell: " << bookSell << '\n';
-#endif
-
-          if (const auto output = pricerSell.price(
-                  reduce_order.timestamp, obp::Side::Bid, bookSell,
-                  anonymous_order->price, remaining_quantity, target_size);
-              output) {
-            std::cout << *output << '\n';
-          }
-        } break;
+        case obp::Side::Ask:
+          processOrderReduceSide(bookSell, pricerSell, reduce_order,
+                                 anonymous_order, obp::Side::Bid, target_size);
+          break;
 
         default:
           std::cerr << "Not there.\n";
